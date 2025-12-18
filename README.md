@@ -1,4 +1,4 @@
-# 🦕 Stegnosaurus - Zero-Steganography Image Hiding System
+# Steganography- Zero-Steganography Image Hiding System
 
 A secure and innovative web-based steganography system that transfers secret images **without modifying the cover image**, making it completely undetectable by traditional steganalysis methods.
 
