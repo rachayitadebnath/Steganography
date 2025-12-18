@@ -44,7 +44,7 @@ Cover Image + Stego-Key = Secret Image
 
 1. **Clone or download the project**
    ```bash
-   cd /path/to/Stegnosaurus
+   cd /path/to/Steganography
    ```
 
 2. **Create a virtual environment** (recommended)
@@ -92,7 +92,7 @@ Open your web browser and navigate to the URL above.
 ## 🗂️ Project Structure
 
 ```
-Stegnosaurus/
+Steganography/
 ├── app.py                  # Flask web application (main server)
 ├── zero_stego.py          # Zero-steganography algorithm implementation
 ├── requirements.txt       # Python dependencies
