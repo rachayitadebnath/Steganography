@@ -1,14 +1,21 @@
 from flask import Flask, render_template, request, send_file
 import os
 import uuid
+import sys
+
+# Add parent directory to path to import zero_stego
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from zero_stego import process_sender, process_receiver
 
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
+            static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-UPLOAD_FOLDER = 'static/uploads'
-KEYS_FOLDER = 'static/keys'
-RECOVERED_FOLDER = 'static/recovered'
+# Use /tmp for serverless environment
+UPLOAD_FOLDER = '/tmp/uploads'
+KEYS_FOLDER = '/tmp/keys'
+RECOVERED_FOLDER = '/tmp/recovered'
 
 for folder in [UPLOAD_FOLDER, KEYS_FOLDER, RECOVERED_FOLDER]:
     os.makedirs(folder, exist_ok=True)
@@ -123,5 +130,6 @@ def download_file(filepath):
     except Exception:
         return "Access denied", 403
 
+# For local development
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=False)
