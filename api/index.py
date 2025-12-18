@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, send_file, jsonify, redirect, url_for
+from flask import Flask, render_template, request, send_file
 import os
 import uuid
 import sys
 
 # Add parent directory to path to import zero_stego
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from zero_stego import process_sender, process_receiver, load_image, calculate_psnr
+from zero_stego import process_sender, process_receiver
 
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
@@ -129,10 +129,6 @@ def download_file(filepath):
         return send_file(abs_path, as_attachment=True)
     except Exception:
         return "Access denied", 403
-
-# Vercel serverless function handler
-def handler(request, context=None):
-    return app(request, context)
 
 # For local development
 if __name__ == '__main__':
