@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receiver - Zero-Steganography</title>
+    <style>
+        :root {
+            --bg-start: #1a0033;
+            --bg-mid: #2d1b47;
+            --bg-end: #1e1535;
+            --text-primary: #e1d4f0;
+            --text-secondary: #b8a5d6;
+            --accent-start: #b39ddb;
+            --accent-mid: #90caf9;
+            --accent-end: #81c784;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(179, 157, 219, 0.3);
+            --abstract-1: #4a2c5e;
+            --abstract-2: #2a3f5f;
+            --abstract-3: #2d4f4a;
+        }
+        :root.light-mode {
+            --bg-start: #fce4ec;
+            --bg-mid: #f8bbd0;
+            --bg-end: #e1bee7;
+            --text-primary: #4a148c;
+            --text-secondary: #6a1b9a;
+            --accent-start: #b39ddb;
+            --accent-mid: #90caf9;
+            --accent-end: #81c784;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(179, 157, 219, 0.4);
+            --abstract-1: #ffccbc;
+            --abstract-2: #c5cae9;
+            --abstract-3: #b2dfdb;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: 
+                radial-gradient(circle at 20% 30%, var(--abstract-1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, var(--abstract-2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, var(--abstract-3) 0%, transparent 50%),
+                linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+            min-height: 100vh; color: var(--text-primary); padding: 20px;
+            transition: background 0.3s ease;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-mid), var(--accent-end));
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(179, 157, 219, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        .theme-toggle:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(179, 157, 219, 0.6);
+        }
+        .container { max-width: 700px; margin: 0 auto; padding-top: 2rem; }
+        .header { display: flex; align-items: center; margin-bottom: 2rem; gap: 1rem; }
+        .back-link { color: var(--accent-start); text-decoration: none; margin-right: 1rem; font-size: 1.5rem; }
+        h1 { font-size: 2rem; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .form-card { 
+            background: var(--card-bg); 
+            border: 3px solid var(--card-border); 
+            border-radius: 30px; 
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(179, 157, 219, 0.3);
+        }
+        .upload-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.95rem; }
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .file-btn { 
+            display: block; 
+            width: 100%; 
+            padding: 1rem; 
+            background: linear-gradient(135deg, rgba(179, 157, 219, 0.2), rgba(144, 202, 249, 0.2)); 
+            border: 2px dashed rgba(179, 157, 219, 0.6); 
+            border-radius: 20px; 
+            color: var(--accent-start); 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .file-btn:hover { 
+            background: linear-gradient(135deg, rgba(179, 157, 219, 0.35), rgba(144, 202, 249, 0.35)); 
+            border-color: var(--accent-mid);
+            transform: scale(1.02);
+        }
+        .submit-btn { 
+            width: 100%; 
+            padding: 1rem; 
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-mid), var(--accent-end)); 
+            border: 2px solid rgba(255, 255, 255, 0.6); 
+            border-radius: 20px; 
+            color: var(--text-primary); 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(179, 157, 219, 0.4);
+        }
+        .submit-btn:hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 8px 25px rgba(179, 157, 219, 0.6); 
+        }
+        .alert { padding: 1rem; border-radius: 20px; margin-bottom: 1.5rem; backdrop-filter: blur(5px); }
+        .alert-error { background: rgba(255, 138, 128, 0.25); border: 2px solid rgba(239, 83, 80, 0.5); color: #c62828; }
+        .alert-success { background: rgba(129, 199, 132, 0.25); border: 2px solid rgba(129, 199, 132, 0.6); color: #2e7d32; }
+        .result-box { 
+            margin-top: 1.5rem; 
+            padding: 2rem; 
+            background: linear-gradient(135deg, rgba(179, 157, 219, 0.2), rgba(144, 202, 249, 0.2)); 
+            border: 2px solid rgba(179, 157, 219, 0.4); 
+            border-radius: 25px; 
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .result-box h3 { color: var(--accent-start); margin-bottom: 1.5rem; }
+        .recovered-image { 
+            max-width: 100%; 
+            max-height: 450px; 
+            border-radius: 20px; 
+            margin: 1rem 0; 
+            box-shadow: 0 8px 25px rgba(179, 157, 219, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.6);
+        }
+        .download-btn { 
+            display: inline-block; 
+            margin-top: 1rem; 
+            padding: 0.75rem 1.5rem; 
+            background: linear-gradient(135deg, var(--accent-mid), var(--accent-end)); 
+            color: var(--text-primary); 
+            text-decoration: none; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(144, 202, 249, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        .download-btn:hover { 
+            transform: translateY(-3px) scale(1.05); 
+            box-shadow: 0 6px 18px rgba(144, 202, 249, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-link">←</a>
+            <h1>Receiver Mode</h1>
+        </div>
+        <div class="form-card">
+            {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+            {% if success %}
+            <div class="alert alert-success">Secret image recovered successfully!</div>
+            <div class="result-box">
+                <h3>Recovery Complete</h3>
+                <img src="/{{ recovered_path }}" alt="Recovered Secret Image" class="recovered-image">
+                <br>
+                <a href="/download/{{ recovered_path }}" class="download-btn">Download Recovered Image</a>
+            </div>
+            {% else %}
+            <form method="POST" enctype="multipart/form-data">
+                <div class="upload-group">
+                    <label>Cover Image (original, unchanged)</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-btn" id="cover-btn">Click to select cover image</div>
+                        <input type="file" name="cover" accept="image/*" onchange="updateFileName(this, 'cover-btn')">
+                    </div>
+                </div>
+                <div class="upload-group">
+                    <label>Stego-Key (.npy file)</label>
+                    <div class="file-input-wrapper">
+                        <div class="file-btn" id="key-btn">Click to select stego-key file</div>
+                        <input type="file" name="key" accept=".npy" onchange="updateFileName(this, 'key-btn')">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Recover Secret Image</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        function toggleTheme() {
+            const root = document.documentElement;
+            const btn = document.querySelector('.theme-toggle');
+            const isLight = root.classList.toggle('light-mode');
+            btn.textContent = isLight ? '🌙 Dark Mode' : '☀️ Light Mode';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.add('light-mode');
+            document.querySelector('.theme-toggle').textContent = '🌙 Dark Mode';
+        }
+        
+        function updateFileName(input, btnId) {
+            const btn = document.getElementById(btnId);
+            if (input.files && input.files[0]) {
+                btn.textContent = input.files[0].name;
+                btn.style.borderStyle = 'solid';
+                btn.style.background = 'rgba(255, 140, 66, 0.3)';
+                btn.style.borderColor = 'var(--accent-end)';
+                btn.style.color = 'var(--accent-start)';
+            }
+        }
+    </script>
+</body>
+</html>
