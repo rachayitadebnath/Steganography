@@ -108,19 +108,27 @@ ALLOWED_DOWNLOAD_DIRS = [KEYS_FOLDER, RECOVERED_FOLDER]
 
 @app.route('/download/<path:filepath>')
 def download_file(filepath):
-    abs_path = os.path.abspath(filepath)
-    allowed = False
-    for allowed_dir in ALLOWED_DOWNLOAD_DIRS:
-        abs_allowed = os.path.abspath(allowed_dir)
-        if abs_path.startswith(abs_allowed + os.sep) or abs_path == abs_allowed:
-            if os.path.isfile(abs_path):
-                allowed = True
-                break
-    
-    if not allowed:
+    try:
+        abs_path = os.path.abspath(filepath)
+        allowed = False
+        for allowed_dir in ALLOWED_DOWNLOAD_DIRS:
+            abs_allowed = os.path.abspath(allowed_dir)
+            # Use os.path.commonpath to prevent path traversal attacks
+            try:
+                common = os.path.commonpath([abs_path, abs_allowed])
+                if common == abs_allowed and os.path.isfile(abs_path):
+                    allowed = True
+                    break
+            except ValueError:
+                # Paths are on different drives or one is relative
+                continue
+        
+        if not allowed:
+            return "Access denied", 403
+        
+        return send_file(abs_path, as_attachment=True)
+    except Exception:
         return "Access denied", 403
-    
-    return send_file(abs_path, as_attachment=True)
 
 # Vercel serverless function handler
 def handler(request, context=None):
